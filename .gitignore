@@ -1,5 +1,7 @@
 .idea
 *.ipynb
+
 .secrets
+!.gitkeep
 
 __pycache__
