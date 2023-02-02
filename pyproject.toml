@@ -8,8 +8,8 @@ packages = [{include = "dreamprf_diary_bot"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-python-telegram-bot = "^20.0"
 gsheetsdb = "^0.1.13.1"
+aiogram = "^2.24"
 
 
 [build-system]
