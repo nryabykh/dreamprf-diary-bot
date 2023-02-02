@@ -1,2 +1,5 @@
 .idea
 *.ipynb
+.secrets
+
+__pycache__
