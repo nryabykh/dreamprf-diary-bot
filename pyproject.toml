@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "dreamprf-diary-bot"
+version = "0.1.0"
+description = ""
+authors = ["Nikolai Riabykh nikolay.ryabykh@gmail.com"]
+readme = "README.md"
+packages = [{include = "dreamprf_diary_bot"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-telegram-bot = "^20.0"
+gsheetsdb = "^0.1.13.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
