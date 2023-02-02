@@ -5,10 +5,11 @@ from datetime import datetime
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters import Text
 
+from config import get_spreadsheet_id
 from gsheet import Sheet
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_DREAMPRF_TOKEN')
-SPREADSHEET_ID = '14eDErJv8k2dLD1xdeGsWhRVL785LOX5vk_OMecsYWtU'
+SPREADSHEET_ID = get_spreadsheet_id()
 RANGE = '0-14 дней!A:DH'
 DATES_RANGE = '0-14 дней!A3:GH3'
 

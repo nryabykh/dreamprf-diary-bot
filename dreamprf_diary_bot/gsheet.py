@@ -1,19 +1,12 @@
 import logging
-from pathlib import Path
 from typing import Any
 
-import tomli
 from google.oauth2 import service_account
 from apiclient import discovery
 
+from config import get_cred_file
+
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-
-
-def get_cred_file():
-    folder = Path(__file__).parent.parent / '.secrets'
-    with open(folder / 'secrets.toml', 'rb') as f:
-        config = tomli.load(f)
-    return folder / config['google']['filename']
 
 
 class Sheet:
