@@ -4,5 +4,6 @@
 .secrets
 !.gitkeep
 state.json
+user_sid.json
 
 __pycache__

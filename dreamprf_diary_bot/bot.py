@@ -1,4 +1,6 @@
+import json
 import logging
+import re
 from datetime import datetime, timedelta, timezone
 
 from aiogram import Bot, Dispatcher, executor, types
@@ -8,8 +10,8 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 import static
-from config import TELEGRAM_BOT_TOKEN, SPREADSHEET_ID, TIME_COL, NOTES_COL, NIGHT_ROW_INDEX, NIGHT_LENGTH, DATES_RANGE, \
-    RANGE
+from config import TELEGRAM_BOT_TOKEN, TIME_COL, NOTES_COL, NIGHT_ROW_INDEX, NIGHT_LENGTH, DATES_RANGE, \
+    RANGE, get_spreadsheet_id
 from gsheet import Sheet
 
 
@@ -25,7 +27,6 @@ logger = logging.getLogger(__name__)
 # Initialize bot and dispatcher
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 dp = Dispatcher(bot, storage=JSONStorage('state.json'))
-sheet = Sheet(spreadsheet_id=SPREADSHEET_ID)
 
 
 class NightRegister(StatesGroup):
@@ -62,9 +63,14 @@ async def cmd_night(message: types.Message, state: FSMContext):
 
 @dp.message_handler(Text(equals="Добавить НП"), state=NightRegister.start)
 async def post_night_wake(message: types.Message, state: FSMContext):
+    sid = get_spreadsheet_id(message.from_user.id)
+    if not sid:
+        await message.reply('Не удалось найти ссылку на таблицу для вас. Отправьте ссылку на таблицу боту, не находясь в режиме записи пробуждений')
+        return
+    sheet = Sheet(spreadsheet_id=sid)
     time = get_datetime_to_fill()
     time_str = time.strftime("%H:%M")
-    write_range = get_night_wake_range(time)
+    write_range = get_night_wake_range(sheet, time)
     logging.info(f'Night wake-up at {time_str}. Log into range {write_range}')
     sheet.update(write_range, [[time_str]])
     await message.reply(f"Записано НП в {time_str}", reply=False)
@@ -80,20 +86,39 @@ async def cmd_night(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=NightRegister.start)
 async def note(message: types.Message, state: FSMContext):
+    sid = get_spreadsheet_id(message.from_user.id)
+    if not sid:
+        await message.reply('Не удалось найти ссылку на таблицу для вас. Отправьте ссылку на таблицу боту, не находясь в режиме записи пробуждений')
+        return
+    sheet = Sheet(spreadsheet_id=sid)
     cmt = message.text
     time = get_datetime_to_fill()
-    write_range = get_night_comment_range(time)
+    write_range = get_night_comment_range(sheet, time)
     if not write_range:
         return
     logging.info(f'Comment for the last night wake-up. Log into range {write_range}')
-    last_night_time = get_last_night_time(time)
+    last_night_time = get_last_night_time(sheet, time)
     sheet.update(write_range, [[cmt]])
     await message.reply(f'Добавили комментарий к просыпанию в {last_night_time}', reply=False)
 
 
 @dp.message_handler()
 async def echo(message: types.Message):
-    await message.reply(f'Для записи комментария к НП перейдите в режим /night и добавьте НП.')
+    pattern = 'https://docs.google.com/spreadsheets/d/(.*?)/'
+    match = re.match(pattern, message.text)
+    if match:
+        sid = match.groups(1)[0]
+        user_id = message.from_user.id
+        with open('user_sid.json', 'r+') as f:
+            data = json.load(f)
+            if user_id in data:
+                data.pop(user_id)
+            data[user_id] = sid
+            f.seek(0)
+            json.dump(data, f, indent=4)
+        await message.reply('Идентификатор таблицы сохранен', reply=False)
+    else:
+        await message.reply(f'Для записи комментария к НП перейдите в режим /night и добавьте НП.')
 
 
 def get_first_night(data: list[list[str]]):
@@ -106,7 +131,7 @@ def get_datetime_to_fill():
     return now - timedelta(days=1) if now.hour < 10 else now
 
 
-def get_night_wake_range(time: datetime):
+def get_night_wake_range(sheet: Sheet, time: datetime):
     dates = sheet.get_data(sheet_range=DATES_RANGE)
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
     filled_col = sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write))
@@ -115,7 +140,7 @@ def get_night_wake_range(time: datetime):
     return write_range
 
 
-def get_night_comment_range(time: datetime):
+def get_night_comment_range(sheet: Sheet, time: datetime):
     dates = sheet.get_data(sheet_range=DATES_RANGE)
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
     filled_col = sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write))
@@ -126,7 +151,7 @@ def get_night_comment_range(time: datetime):
     return write_range
 
 
-def get_last_night_time(time: datetime):
+def get_last_night_time(sheet: Sheet, time: datetime):
     dates = sheet.get_data(sheet_range=DATES_RANGE)
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
     return sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write))[-1][0]
@@ -144,11 +169,3 @@ def _get_night_write_range(r: str, col_ix: int, row_ix: int) -> str:
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
-
-
-
-# @dp.message_handler(commands=['first'])
-# async def send_first_night(message: types.Message):
-#     data = sheet.get_data(sheet_range=RANGE)
-#     response = '\n'.join(get_first_night(data))
-#     await message.reply(response, reply=False)

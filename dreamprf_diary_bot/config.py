@@ -1,5 +1,8 @@
+import json
+import logging
 import os
 from pathlib import Path
+from typing import Optional
 
 import tomli
 
@@ -35,9 +38,10 @@ def _get_secrets_folder():
     return Path(__file__).parent.parent / '.secrets'
 
 
-def get_spreadsheet_id():
-    config = _get_config()
-    return config['google']['spreadsheet_id']
+def get_spreadsheet_id(user_id: int) -> Optional[str]:
+    with open('user_sid.json', 'r') as f:
+        data = json.load(f)
+    return data.get(str(user_id), None)
 
 
-SPREADSHEET_ID = get_spreadsheet_id()
+# SPREADSHEET_ID = get_spreadsheet_id()
