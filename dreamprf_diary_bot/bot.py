@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.files import JSONStorage
@@ -101,7 +101,8 @@ def get_first_night(data: list[list[str]]):
 
 
 def get_datetime_to_fill():
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
+    now = now.astimezone(timezone(timedelta(hours=6)))
     return now - timedelta(days=1) if now.hour < 10 else now
 
 
