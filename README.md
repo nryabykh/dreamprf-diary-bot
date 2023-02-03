@@ -22,3 +22,8 @@ Telegram bot for baby's dreams diary. Diary created by [Ekaterina Parfenova](htt
 - [ ] day
 - [ ] chart
 - [ ] lastnight
+
+## Credits
+
+- Alexey Goloburdin: https://github.com/alexey-goloburdin/botanim-bot/
+- MasterGroosha: https://mastergroosha.github.io/aiogram-2-guide/
