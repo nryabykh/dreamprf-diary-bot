@@ -3,5 +3,6 @@
 
 .secrets
 !.gitkeep
+state.json
 
 __pycache__
