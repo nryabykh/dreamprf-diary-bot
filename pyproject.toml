@@ -2,7 +2,7 @@
 name = "dreamprf-diary-bot"
 version = "0.3.0"
 description = ""
-authors = ["Nikolai Riabykh <nikolay.ryabykh@gmail.com">]
+authors = ["Nikolai Riabykh <nikolay.ryabykh@gmail.com>"]
 readme = "README.md"
 packages = [{include = "dreamprf_diary_bot"}]
 
