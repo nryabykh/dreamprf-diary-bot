@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2023-02-07
+
+### Fixed
+
+- Fix error when bot was unable to recognize a time of edited comment due to absence of leading zero in GSheets in times like 0:46.
+
 ## [0.3.0] - 2023-02-07
 
 ### Added
