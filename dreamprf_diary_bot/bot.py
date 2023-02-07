@@ -182,10 +182,19 @@ def get_night_comment_range(sheet: Sheet, time: datetime, time_to_edit: str):
     dates = sheet.get_data(sheet_range=DATES_RANGE)
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
     filled_col = sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write))
+
+    # add leading zero if needed (0:46 --> 00:46)
+    for i in range(len(filled_col)):
+        cell = filled_col[i]
+        if not cell:
+            continue
+        value = cell[0]
+        if ':' in value and len(value) < 5:
+            filled_col[i] = [f'0{value}']
+
     fc = filled_col[NIGHT_ROW_INDEX:]
     logging.info(f'{time_to_edit=}, {fc=}')
     row_ix = len(filled_col) if not time_to_edit else filled_col.index([time_to_edit]) + 1
-    # last_row_ix = len(filled_col)
     if row_ix == 45:
         return None
     write_range = _get_night_write_range(RANGE, col_to_write + 1, row_ix - 1)
