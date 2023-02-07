@@ -7,3 +7,4 @@ state.json
 user_sid.json
 
 __pycache__
+*.log
