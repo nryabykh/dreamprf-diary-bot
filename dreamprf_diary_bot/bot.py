@@ -179,7 +179,7 @@ def get_night_wake_range(sheet: Sheet, time: datetime):
 
 
 def get_night_comment_range(sheet: Sheet, time: datetime, time_to_edit: str):
-    time_to_edit = time_to_edit if len(time_to_edit) == 5 else f'0{time_to_edit}'
+    time_to_edit = time_to_edit if not time_to_edit or len(time_to_edit) == 5 else f'0{time_to_edit}'
     dates = sheet.get_data(sheet_range=DATES_RANGE)
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
     filled_col = sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write))
