@@ -1,0 +1,34 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.3.0] - 2023-02-07
+
+### Added
+
+- Edit previously added comments via inline buttons (command `/last`)
+- `start.sh` and `stop.sh` for easy starting and stopping the bot
+
+### Fixed
+
+- Fixed error if `user_sid.json` file didn't exist.
+
+## [0.2.0] - 2023-02-03
+
+### Added
+
+- Register of night waking (commands `/night`, `/end`)
+- Adding comments to the last night waking
+- Storing spreadsheet ID in json-file for every user
+- Extracting spreadsheet ID from the link to spreadsheet.
+
+## [0.1.0] - 2023-02-01
+
+### Added
+
+- Init version
+- Commands `/start`, `/help`
+- Working with Google sheets: getting and updating data
