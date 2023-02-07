@@ -39,9 +39,9 @@ def _get_secrets_folder():
 
 
 def get_spreadsheet_id(user_id: int) -> Optional[str]:
+    if not os.path.exists('user_sid.json'):
+        return None
+
     with open('user_sid.json', 'r') as f:
         data = json.load(f)
     return data.get(str(user_id), None)
-
-
-# SPREADSHEET_ID = get_spreadsheet_id()
