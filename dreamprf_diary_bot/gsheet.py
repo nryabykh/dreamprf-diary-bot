@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from google.oauth2 import service_account
 from apiclient import discovery
@@ -16,17 +16,26 @@ class Sheet:
         self._creds = service_account.Credentials.from_service_account_file(self._cred_filepath)
         self._service = discovery.build('sheets', 'v4', credentials=self._creds)
         self._sheet = self._service.spreadsheets()
+        self._start_date = self.get_data('D3:D3')[0][0]
 
     def get_service(self):
         return self._service
 
-    def get_data(self, sheet_range: str):
+    def get_start_date(self):
+        return self._start_date
+
+    def get_data(self, sheet_range: str, sheet_name: Optional[str] = None):
+        if sheet_name:
+            sheet_range = f'{sheet_name}!{sheet_range}'
         get_sheet = self._sheet.values().get(spreadsheetId=self.spreadsheet_id, range=sheet_range).execute()
-        values = get_sheet.get('values', [])
+        values = get_sheet.get('values', [[]])
         return values
 
-    def update(self, sheet_range: str, values: list[list[Any]]):
+    def update(self, sheet_range: str, values: list[list[Any]], sheet_name: Optional[str] = None):
         # TODO Check size of `sheet_range` and size of `values`
+
+        if sheet_name:
+            sheet_range = f'{sheet_name}!{sheet_range}'
 
         body = {'values': values}
         result = self._sheet.values().update(
