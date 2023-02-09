@@ -5,17 +5,15 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+import static
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.files import JSONStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher.filters.state import StatesGroup, State
-
-import static
-from config import TELEGRAM_BOT_TOKEN, TIME_COL, NOTES_COL, NIGHT_ROW_INDEX, NIGHT_LENGTH, DATES_RANGE, \
-    RANGE, get_spreadsheet_id
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from config import (DATES_RANGE, NIGHT_LENGTH, NIGHT_ROW_INDEX, NOTES_COL,
+                    RANGE, TELEGRAM_BOT_TOKEN, TIME_COL, get_spreadsheet_id)
 from gsheet import Sheet
-
 
 if not TELEGRAM_BOT_TOKEN:
     exit('Specify TELEGRAM_BOT_DREAMPRF_TOKEN as environment variable')
@@ -40,7 +38,7 @@ async def send_welcome(message: types.Message):
     response = static.start_message
     sid = get_spreadsheet_id(message.from_user.id)
     sheet = Sheet(spreadsheet_id=sid)
-    sheet_name = get_sheet_name(sheet)
+    _ = get_sheet_name(sheet)
     await message.reply(response, reply=False)
 
 
@@ -70,7 +68,9 @@ async def cmd_night(message: types.Message, state: FSMContext):
 async def post_night_wake(message: types.Message, state: FSMContext):
     sid = get_spreadsheet_id(message.from_user.id)
     if not sid:
-        await message.reply('Не удалось найти ссылку на таблицу для вас. Отправьте ссылку на таблицу боту, не находясь в режиме записи пробуждений')
+        text = """Не удалось найти ссылку на таблицу для вас. Отправьте ссылку на таблицу боту, не находясь в режиме
+ записи пробуждений."""
+        await message.reply(text)
         return
     sheet = Sheet(spreadsheet_id=sid)
     time = get_datetime_to_fill()
@@ -83,7 +83,7 @@ async def post_night_wake(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(commands="end", state=NightRegister.start)
-async def cmd_night(message: types.Message, state: FSMContext):
+async def end_night(message: types.Message, state: FSMContext):
     await message.reply(
         "Вышли из режима записи ночных пробуждений.", reply_markup=types.ReplyKeyboardRemove(), reply=False
     )
@@ -163,11 +163,11 @@ async def echo(message: types.Message):
                 json.dump(data, f, indent=4)
         await message.reply('Идентификатор таблицы сохранен', reply=False)
     else:
-        await message.reply(f'Для записи комментария к НП перейдите в режим /night и добавьте НП.')
+        await message.reply('Для записи комментария к НП перейдите в режим /night и добавьте НП.')
 
 
 def get_first_night(data: list[list[str]]):
-    return [f'{v[TIME_COL]} - {v[NOTES_COL]}' for v in data[NIGHT_ROW_INDEX:NIGHT_ROW_INDEX+NIGHT_LENGTH]]
+    return [f'{v[TIME_COL]} - {v[NOTES_COL]}' for v in data[NIGHT_ROW_INDEX:NIGHT_ROW_INDEX + NIGHT_LENGTH]]
 
 
 def get_datetime_to_fill() -> datetime:
