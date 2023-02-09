@@ -1,10 +1,9 @@
 import logging
 from typing import Any, Optional
 
-from google.oauth2 import service_account
 from apiclient import discovery
-
 from config import get_cred_file
+from google.oauth2 import service_account
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
