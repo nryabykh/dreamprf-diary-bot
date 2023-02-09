@@ -3,6 +3,7 @@ import logging
 import os.path
 import re
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.files import JSONStorage
@@ -37,6 +38,9 @@ class NightRegister(StatesGroup):
 @dp.message_handler(commands='start')
 async def send_welcome(message: types.Message):
     response = static.start_message
+    sid = get_spreadsheet_id(message.from_user.id)
+    sheet = Sheet(spreadsheet_id=sid)
+    sheet_name = get_sheet_name(sheet)
     await message.reply(response, reply=False)
 
 
@@ -73,7 +77,7 @@ async def post_night_wake(message: types.Message, state: FSMContext):
     time_str = time.strftime("%H:%M")
     write_range = get_night_wake_range(sheet, time)
     logging.info(f'Night wake-up at {time_str}. Log into range {write_range}')
-    sheet.update(write_range, [[time_str]])
+    sheet.update(write_range, [[time_str]], sheet_name=get_sheet_name(sheet))
     await state.update_data(last_night_time=time_str)
     await message.reply(f"Записано НП в {time_str}", reply=False)
 
@@ -90,10 +94,13 @@ async def cmd_night(message: types.Message, state: FSMContext):
 async def last_night(message: types.Message):
     sid = get_spreadsheet_id(message.from_user.id)
     sheet = Sheet(spreadsheet_id=sid)
-    dates = sheet.get_data(sheet_range=DATES_RANGE)
+    dates = sheet.get_data(sheet_range=DATES_RANGE, sheet_name=get_sheet_name(sheet))
     time = get_datetime_to_fill()
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
-    response = sheet.get_data(f'R{NIGHT_ROW_INDEX + 1}C{col_to_write + 1}:R{NIGHT_ROW_INDEX+NIGHT_LENGTH+1}C{col_to_write+2}')
+    response = sheet.get_data(
+        f'R{NIGHT_ROW_INDEX + 1}C{col_to_write + 1}:R{NIGHT_ROW_INDEX+NIGHT_LENGTH+1}C{col_to_write+2}',
+        sheet_name=get_sheet_name(sheet)
+    )
     response = [' - '.join(line) for line in response]
     # await message.reply(response, reply=False)
 
@@ -131,7 +138,7 @@ async def note(message: types.Message, state: FSMContext):
         return
     logging.info(f'Comment for the last night wake-up. Log into range {write_range}')
     # last_night_time = get_last_night_time(sheet, time)
-    sheet.update(write_range, [[cmt]])
+    sheet.update(write_range, [[cmt]], sheet_name=get_sheet_name(sheet))
     await message.reply(f'Добавили комментарий к просыпанию в {last_night_time}', reply=False)
 
 
@@ -163,16 +170,16 @@ def get_first_night(data: list[list[str]]):
     return [f'{v[TIME_COL]} - {v[NOTES_COL]}' for v in data[NIGHT_ROW_INDEX:NIGHT_ROW_INDEX+NIGHT_LENGTH]]
 
 
-def get_datetime_to_fill():
+def get_datetime_to_fill() -> datetime:
     now = datetime.now(timezone.utc)
     now = now.astimezone(timezone(timedelta(hours=6)))
     return now - timedelta(days=1) if now.hour < 10 else now
 
 
 def get_night_wake_range(sheet: Sheet, time: datetime):
-    dates = sheet.get_data(sheet_range=DATES_RANGE)
+    dates = sheet.get_data(sheet_range=DATES_RANGE, sheet_name=get_sheet_name(sheet))
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
-    filled_col = sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write))
+    filled_col = sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write), sheet_name=get_sheet_name(sheet))
     last_row_ix = len(filled_col)
     write_range = _get_night_write_range(RANGE, col_to_write, last_row_ix)
     return write_range
@@ -180,9 +187,9 @@ def get_night_wake_range(sheet: Sheet, time: datetime):
 
 def get_night_comment_range(sheet: Sheet, time: datetime, time_to_edit: str):
     time_to_edit = time_to_edit if not time_to_edit or len(time_to_edit) == 5 else f'0{time_to_edit}'
-    dates = sheet.get_data(sheet_range=DATES_RANGE)
+    dates = sheet.get_data(sheet_range=DATES_RANGE, sheet_name=get_sheet_name(sheet))
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
-    filled_col = sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write))
+    filled_col = sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write), sheet_name=get_sheet_name(sheet))
 
     # add leading zero if needed (0:46 --> 00:46)
     for i in range(len(filled_col)):
@@ -203,19 +210,29 @@ def get_night_comment_range(sheet: Sheet, time: datetime, time_to_edit: str):
 
 
 def get_last_night_time(sheet: Sheet, time: datetime):
-    dates = sheet.get_data(sheet_range=DATES_RANGE)
+    dates = sheet.get_data(sheet_range=DATES_RANGE, sheet_name=get_sheet_name(sheet))
     col_to_write = dates[0].index(time.strftime('%d.%m.%Y'))
-    return sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write))[-1][0]
+    return sheet.get_data(sheet_range=_get_night_range(RANGE, col_to_write), sheet_name=get_sheet_name(sheet))[-1][0]
 
 
 def _get_night_range(r: str, col_ix: int) -> str:
-    sheet_name = r.split('!')[0]
-    return f'{sheet_name}!R1C{col_ix+1}:R1000C{col_ix+1}'
+    # sheet_name = r.split('!')[0]
+    return f'R1C{col_ix+1}:R1000C{col_ix+1}'
 
 
 def _get_night_write_range(r: str, col_ix: int, row_ix: int) -> str:
-    sheet_name = r.split('!')[0]
-    return f'{sheet_name}!R{row_ix+1}C{col_ix+1}:R{row_ix+1}C{col_ix+1}'
+    # sheet_name = r.split('!')[0]
+    return f'R{row_ix+1}C{col_ix+1}:R{row_ix+1}C{col_ix+1}'
+
+
+def get_sheet_name(sheet: Sheet, time: Optional[datetime] = None):
+    if not time:
+        time = get_datetime_to_fill()
+    start_date_str = sheet.get_start_date()
+    start_date = datetime.strptime(start_date_str, '%d.%m.%Y').astimezone(timezone(timedelta(hours=6)))
+    sheet_name = '0-14 дней' if time < start_date + timedelta(days=14) else '14-27 дней'
+    logging.info(f'{start_date=}, {start_date_str=}, {time=}, {sheet_name=}')
+    return sheet_name
 
 
 if __name__ == '__main__':

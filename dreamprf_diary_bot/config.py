@@ -7,8 +7,8 @@ from typing import Optional
 import tomli
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_DREAMPRF_TOKEN')
-RANGE = '0-14 дней!A:DH'
-DATES_RANGE = '0-14 дней!A3:GH3'
+RANGE = 'A:DH'
+DATES_RANGE = 'A3:GH3'
 
 TIME_COL = 3
 NOTES_COL = 4
