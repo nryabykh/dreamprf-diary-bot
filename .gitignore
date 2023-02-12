@@ -3,8 +3,9 @@
 
 .secrets
 !.gitkeep
-state.json
-user_sid.json
+db/state.json
+db/user_sid.json
+.env
 
 __pycache__
 *.log
