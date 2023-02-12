@@ -1,5 +1,4 @@
 from aiogram import types
-from aiogram.dispatcher import FSMContext
 
 from dreamprf_diary_bot.services import night_register
 
