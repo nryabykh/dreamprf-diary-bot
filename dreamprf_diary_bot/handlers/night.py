@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from dreamprf_diary_bot.services.night_register import NightRegister
+from dreamprf_diary_bot.handlers.states import NightRegister
 
 
 async def night(message: types.Message, state: FSMContext):

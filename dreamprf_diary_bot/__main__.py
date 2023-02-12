@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types import BotCommand
 
 from dreamprf_diary_bot import config, handlers
-from dreamprf_diary_bot.services.night_register import NightRegister
+from dreamprf_diary_bot.handlers.states import NightRegister
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s", level=logging.INFO

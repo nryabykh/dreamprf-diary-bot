@@ -1,16 +1,10 @@
 import logging
 
-from aiogram.dispatcher.filters.state import StatesGroup, State
-
 from dreamprf_diary_bot import static, config
 from dreamprf_diary_bot.services import gsheet, utils
 from dreamprf_diary_bot.services.gsheet import Doc
 
 logger = logging.getLogger(__name__)
-
-
-class NightRegister(StatesGroup):
-    start = State()
 
 
 def add_wake(user_id: int) -> str:
