@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dreamprf-diary-bot"
-version = "0.5.0"
+version = "0.5.1"
 description = ""
 authors = ["Nikolai Riabykh <nikolay.ryabykh@gmail.com>"]
 readme = "README.md"
