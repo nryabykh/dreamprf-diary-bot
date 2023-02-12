@@ -1,1 +1,1 @@
-nohup poetry run python dreamprf_diary_bot/bot.py 2> app.log &
+nohup poetry run python -m dreamprf_diary_bot 2> logs/app.log 1> logs/app.log &
