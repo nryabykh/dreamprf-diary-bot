@@ -1,6 +1,6 @@
 import logging
 
-from dreamprf_diary_bot import static, config
+from dreamprf_diary_bot import config, static
 from dreamprf_diary_bot.services import gsheet, utils
 from dreamprf_diary_bot.services.gsheet import Doc
 

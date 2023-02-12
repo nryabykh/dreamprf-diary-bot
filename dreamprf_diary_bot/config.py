@@ -35,28 +35,3 @@ DAY_LENGTH = 6
 
 DATE_FORMAT = '%d.%m.%Y'
 TIME_FORMAT = '%H:%M'
-
-# def get_cred_file():
-#     folder = _get_secrets_folder()
-#     config = _get_config()
-#     return folder / config['google']['credentials_filename']
-
-
-# def _get_config():
-#     folder = _get_secrets_folder()
-#     with open(folder / 'secrets.toml', 'rb') as f:
-#         config = tomli.load(f)
-#     return config
-
-
-# def _get_secrets_folder():
-#     return Path(__file__).parent.parent / '.secrets'
-
-
-# def get_spreadsheet_id(user_id: int) -> Optional[str]:
-#     if not os.path.exists('user_sid.json'):
-#         return None
-#
-#     with open('user_sid.json', 'r') as f:
-#         data = json.load(f)
-#     return data.get(str(user_id), None)

@@ -49,9 +49,9 @@ async def main():
 
     callback_handlers = [
         {
-         'handler': handlers.select_time_to_edit,
-         'filters': [Text(startswith='edit_note_')],
-         'state': NightRegister.start
+            'handler': handlers.select_time_to_edit,
+            'filters': [Text(startswith='edit_note_')],
+            'state': NightRegister.start
         }
     ]
 
